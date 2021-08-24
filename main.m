@@ -7,7 +7,7 @@ m = 200;
 K = [
   k1 0;
   0 k2
-]
+];
 
 % mass of p range 1kg to 100kg
 m_p = reshape(linspace(1,100,100), [100,1]);
@@ -18,8 +18,6 @@ p = reshape(linspace(0.75, -0.25, 100), [100,1]);
 % Empty matrices of heave and pitch
 heave = zeros(length(m_p), length(p));
 pitch = zeros(length(m_p), length(p));
-
-disp(m_p(2));
 
 for i=1:length(m_p)
     for j=1:length(p)
@@ -33,10 +31,26 @@ for i=1:length(m_p)
         ];
     
         eigen_values = sqrt(eig(K, M));
-        heave(i, j) = eigen_values(1);
-        pitch(i, j) = eigen_values(2);
+        % divide by 2pi to convert to get Hertz (7:45 of week 2 revision lecture)
+        heave(i, j) = eigen_values(1) / (2*pi);
+        pitch(i, j) = eigen_values(2) / (2*pi);
     end
 end
 
-disp(heave);
-disp(pitch);
+plotter(p, m_p, heave, 'Heave')
+plotter(p, m_p, pitch, 'Pitch')
+
+
+function plotter(p, m_p, freq, name)
+    figure
+    mesh(p, m_p, freq)
+    title(sprintf('Natural Frequences for %s', name))
+    xlabel('p (m)', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'b')
+    ylabel('Mass of p (kg)', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'b')
+    zlabel('Freq (Hz)', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'b')
+end
+
+
+
+
+
