@@ -9,8 +9,8 @@ K = [
   0 k2
 ];
 
-% mass of p range 1kg to 100kg
-m_p = reshape(linspace(1,100,100), [100,1]);
+% mass of p range 0kg to 100kg
+m_p = reshape(linspace(0,100,100), [100,1]);
 
 % p distance from 0.75 to -0.25
 p = reshape(linspace(0.75, -0.25, 100), [100,1]);
