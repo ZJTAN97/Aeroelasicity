@@ -29,6 +29,8 @@ engine1_contrib = @(i, j) 0.5.* MASS_ENGINE.*phi(LENGTH/5, i).*phi(LENGTH/5, j);
 engine2_contrib = @(i, j) 0.5.* MASS_ENGINE.*phi((2*LENGTH/5), i).*phi((2*LENGTH)/5, j);
 engine3_contrib = @(i, j) 0.5.* MASS_ENGINE.*phi((3*LENGTH/5), i).*phi((3*LENGTH)/5, j);
 
+% Equation for Stiffness Matrix %
+stiffness_contrib = @(y, i, j) E.*I(y).*phi_dd(y, i).*phi_dd(y, j);
 
 for i = 1:n
     for j = 1:n
@@ -36,12 +38,15 @@ for i = 1:n
         engine1 = engine1_contrib(i, j);
         engine2 = engine2_contrib(i, j);
         engine3 = engine3_contrib(i, j);
+        stiffness = integral(@(y) stiffness_contrib(y, i, j), 0, 44);
         M(i, j) = wing + engine1 + engine2 + engine3;
+        K(i, j) = stiffness;
     end
 end
 
 
 disp(M);
+disp(K);
 
 
 
