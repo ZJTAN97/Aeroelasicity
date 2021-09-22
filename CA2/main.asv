@@ -4,7 +4,7 @@ RHO = 300;
 LENGTH = 44;
 
 % Number of Modes to Keep 
-n = 9;
+n = 4;
 
 % Empty Matrices for Mass and Stifness
 M = zeros(length(n), length(n));
@@ -32,6 +32,10 @@ engine3_contrib = @(i, j) 0.5.* MASS_ENGINE.*phi((3*LENGTH/5), i).*phi((3*LENGTH
 % Equation for Stiffness Matrix %
 stiffness_contrib = @(y, i, j) E.*I(y).*phi_dd(y, i).*phi_dd(y, j);
 
+n_terms = 4; 
+accuracy = 1;
+
+
 for i = 1:n
     for j = 1:n
         wing = integral(@(y) wing_contrib(y, i, j), 0, 44);
@@ -53,17 +57,9 @@ end
 disp(Freq(4));
 
 
-[Mn, Kn, Vn, Freqn, idx] = FormRitz(phi, phi_dd, 9);
-
-disp(Freqn(4));
 
 
 function [M, K, V, Freq, idx] = FormRitz(phi, phi_dd, n_terms)
-
-MASS_ENGINE = 4100;
-E = 2e12;
-RHO = 300;
-LENGTH = 44;
 
 % Empty Matrices for Mass and Stifness
 M = zeros(length(n_terms), length(n_terms));
@@ -83,8 +79,8 @@ engine3_contrib = @(i, j) 0.5.* MASS_ENGINE.*phi((3*LENGTH/5), i).*phi((3*LENGTH
 % Equation for Stiffness Matrix %
 stiffness_contrib = @(y, i, j) E.*I(y).*phi_dd(y, i).*phi_dd(y, j);
 
-for i = 1:n_terms
-    for j = 1:n_terms
+for i = 1:n
+    for j = 1:n
         wing = integral(@(y) wing_contrib(y, i, j), 0, 44);
         engine1 = engine1_contrib(i, j);
         engine2 = engine2_contrib(i, j);
