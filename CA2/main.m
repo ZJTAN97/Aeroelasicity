@@ -1,6 +1,8 @@
 clear all 
 clc
 
+% https://www.wolframalpha.com/input/?i2d=true&i=Integrate%5BDivide%5B%5C%2840%29-bSin%5BDivide%5Bx%CF%80y%2Cb%5D%5D+-+%CF%80x%5C%2840%29b-y%5C%2841%29Cos%5BDivide%5Bx%CF%80y%2Cb%5D%5D%5C%2841%29%2CPower%5B%CF%80%2C2%5DPower%5Bx%2C2%5DPower%5Bb%2C2%5D%5D+%2Cy%5D
+
 % Equations for phi (Power Series) %
 LENGTH = 44;
 phi = @(y, i)(((y./LENGTH).^(i+1)).*(2+i-i.*(y./LENGTH)))/(i.*(i+1).*(i+2));
@@ -10,22 +12,26 @@ phi_dd = @(y, i) (1./(LENGTH.^3)).*(LENGTH-y).*((y./LENGTH).^(i-1));
 phi_sine = @(y, i) ((-pi.*LENGTH.*i.*sin((i.*pi.*y)./LENGTH) + pi.*y.*i.*sin((i.*pi.*y)./LENGTH) + 2.*LENGTH.*i.*cos((i.*pi.*y)./LENGTH)) ./ ((pi.^3).*(i.^3).*LENGTH));
 phi_dd_sine = @(y, i) ( ((LENGTH-y)./(LENGTH.^3)) .* (sin((i.*pi.*y)./LENGTH)));
 
+% Equation for Phi (Cosine Series) %
+phi_cosine = @(y, i) ((2.*LENGTH.*sin((i.*pi.*y)./LENGTH) + ((i.*pi.*LENGTH) - (i.*pi.*y)).*cos((i.*pi.*y)./LENGTH) - i.*pi.*y) ./ (LENGTH.*(pi.^3).*(i.^3)) + (LENGTH.^2));
+phi_dd_cosine = @(y, i) (((LENGTH-y)./(LENGTH.^3)) .* (cos((i.*pi.*y)./LENGTH)));
+
 error = 1;
 n_conv = 4;
 while error > 0.01
     n_conv = n_conv + 1;
     % to get first frequency so that can compare error.
     if error == 1
-        [~, ~, ~, firstFreq, ~] = FormRitz(phi, phi_dd, 4, LENGTH);
+        [~, ~, ~, firstFreq, ~] = FormRitz(phi_cosine, phi_dd_cosine, 4, LENGTH);
         prevFreq = firstFreq(4);
     end
-    [M, K, V, Freq, idx] = FormRitz(phi, phi_dd, n_conv, LENGTH);
+    [M, K, V, Freq, idx] = FormRitz(phi_cosine, phi_dd_cosine, n_conv, LENGTH);
     error = calculateError(prevFreq, Freq(4));
     prevFreq = Freq(4);
     %fprintf("Previous Frequency: %.5f\n", firstFreq(4));
-    % fprintf("Current Frequency: %.5f\n", Freq(4));
+    fprintf("Current Frequency: %.5f\n", Freq(4));
     %fprintf("Current mode shape: %d\n", n_conv); 
-    fprintf("Current error: %.3f\n" , error);
+    %fprintf("Current error: %.3f\n" , error);
 end
 
 
