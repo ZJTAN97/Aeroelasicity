@@ -1,6 +1,8 @@
 clear all 
 clc
 
+% https://www.wolframalpha.com/input/?i2d=true&i=Integrate%5BDivide%5B%5C%2840%29-bSin%5BDivide%5Bx%CF%80y%2Cb%5D%5D+-+%CF%80x%5C%2840%29b-y%5C%2841%29Cos%5BDivide%5Bx%CF%80y%2Cb%5D%5D%5C%2841%29%2CPower%5B%CF%80%2C2%5DPower%5Bx%2C2%5DPower%5Bb%2C2%5D%5D+%2Cy%5D
+
 % Equations for phi (Power Series) %
 LENGTH = 44;
 phi = @(y, i)(((y./LENGTH).^(i+1)).*(2+i-i.*(y./LENGTH)))/(i.*(i+1).*(i+2));
@@ -14,25 +16,16 @@ phi_dd_sine = @(y, i) ( ((LENGTH-y)./(LENGTH.^3)) .* (sin((i.*pi.*y)./LENGTH)));
 phi_cosine = @(y,i) -(2.*LENGTH.*sin((i.*pi.*y)./LENGTH)-pi.*i.*(y-LENGTH).*cos((i.*pi.*y)./LENGTH)-i.*pi.*y-(i.*pi.*LENGTH))./(pi.^3*LENGTH.*i.^3);
 phi_dd_cosine = @(y,i) (LENGTH-y).*cos((i.*pi.*y)./LENGTH).*(1./(LENGTH.^3));
 
-% Uncomment this for polynomial power series %
-convergence(phi, phi_dd); 
-% Uncomment this for cosine series %
-convergence(phi_cosine, phi_dd_cosine);
-
-function convergence(phi, phi_dd)
-
-LENGTH = 44;
 error = 1;
 n_conv = 4;
-
 while error > 0.01
     n_conv = n_conv + 1;
     % to get first frequency so that can compare error.
     if error == 1
-        [~, ~, ~, firstFreq, ~] = FormRitz(phi, phi_dd, 4, LENGTH);
+        [~, ~, ~, firstFreq, ~] = FormRitz(phi_cosine, phi_dd_cosine, 4, LENGTH);
         prevFreq = firstFreq(4);
     end
-    [M, K, V, Freq, idx] = FormRitz(phi, phi_dd, n_conv, LENGTH);
+    [M, K, V, Freq, idx] = FormRitz(phi_cosine, phi_dd_cosine, n_conv, LENGTH);
     error = calculateError(prevFreq, Freq(4));
     prevFreq = Freq(4);
     %fprintf("Previous Frequency: %.5f\n", firstFreq(4));
@@ -41,10 +34,13 @@ while error > 0.01
     %fprintf("Current error: %.3f\n" , error);
 end
 
+disp(K);
+
 fprintf("Number of Convergence: %d\n", n_conv);
 for i=1:4
     disp(Freq(i));
 end
+
 
 y_vals = linspace(0, LENGTH, 100);
 eigen_vector = V(:, idx);
@@ -55,7 +51,7 @@ hold on
 for i=1:4
     mode_shape = 0;
     for j=1:n_conv
-        mode_shape = mode_shape + phi(y_vals, j).*eigen_vector(j,i);
+        mode_shape = mode_shape + phi_cosine(y_vals, j).*eigen_vector(j,i);
     end
     [~, max_mode_val] = max(abs(mode_shape)); % to normalize mode shape values
     plot(y_vals/LENGTH, mode_shape/mode_shape(max_mode_val));
@@ -64,7 +60,13 @@ yline(0, 'k--');
 legend('Mode Shape 1', 'Mode Shape 2', 'Mode Shape 3', 'Mode Shape 4');
 hold off
 
+
+function convergence(phi, phi_dd)
+
+
+
 end
+
 
 
 function [M, K, V, Freq, idx] = FormRitz(phi, phi_dd, n_terms, LENGTH)
