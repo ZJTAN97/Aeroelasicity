@@ -17,22 +17,22 @@ phi_dd_cosine = @(y,i) (LENGTH-y).*cos((i.*pi.*y)./LENGTH).*(1./(LENGTH.^3));
 % Uncomment this for polynomial power series %
 convergence(phi, phi_dd); 
 % Uncomment this for cosine series %
-convergence(phi_cosine, phi_dd_cosine);
+% convergence(phi_cosine, phi_dd_cosine);
 
 function convergence(phi, phi_dd)
 
 LENGTH = 44;
 error = 1;
-n_conv = 4;
+n_terms = 4;
 
 while error > 0.01
-    n_conv = n_conv + 1;
+    n_terms = n_terms + 1;
     % to get first frequency so that can compare error.
     if error == 1
         [~, ~, ~, firstFreq, ~] = FormRitz(phi, phi_dd, 4, LENGTH);
         prevFreq = firstFreq(4);
     end
-    [M, K, V, Freq, idx] = FormRitz(phi, phi_dd, n_conv, LENGTH);
+    [M, K, V, Freq, idx] = FormRitz(phi, phi_dd, n_terms, LENGTH);
     error = calculateError(prevFreq, Freq(4));
     prevFreq = Freq(4);
     %fprintf("Previous Frequency: %.5f\n", firstFreq(4));
@@ -41,10 +41,14 @@ while error > 0.01
     %fprintf("Current error: %.3f\n" , error);
 end
 
-fprintf("Number of Convergence: %d\n", n_conv);
+fprintf("Number of Convergence: %d\n", n_terms);
 for i=1:4
     disp(Freq(i));
 end
+
+disp(M);
+
+disp(K);
 
 y_vals = linspace(0, LENGTH, 100);
 eigen_vector = V(:, idx);
@@ -54,7 +58,7 @@ title('First 4 Associated Mode Shapes')
 hold on
 for i=1:4
     mode_shape = 0;
-    for j=1:n_conv
+    for j=1:n_terms
         mode_shape = mode_shape + phi(y_vals, j).*eigen_vector(j,i);
     end
     [~, max_mode_val] = max(abs(mode_shape)); % to normalize mode shape values
@@ -112,6 +116,5 @@ end
 
 function [error] = calculateError(prev, next)
 error = (abs((next - prev))/prev)*100;
-
 end
 
