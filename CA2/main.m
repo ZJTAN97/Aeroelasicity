@@ -15,9 +15,9 @@ phi_cosine = @(y,i) -(2.*LENGTH.*sin((i.*pi.*y)./LENGTH)-pi.*i.*(y-LENGTH).*cos(
 phi_dd_cosine = @(y,i) (LENGTH-y).*cos((i.*pi.*y)./LENGTH).*(1./(LENGTH.^3));
 
 % Uncomment this for polynomial power series %
-convergence(phi, phi_dd); 
+% convergence(phi, phi_dd); 
 % Uncomment this for cosine series %
-% convergence(phi_cosine, phi_dd_cosine);
+convergence(phi_cosine, phi_dd_cosine);
 
 function convergence(phi, phi_dd)
 
@@ -46,8 +46,7 @@ for i=1:4
     disp(Freq(i));
 end
 
-disp(M);
-
+% disp(M);
 disp(K);
 
 y_vals = linspace(0, LENGTH, 100);
