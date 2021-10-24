@@ -99,14 +99,9 @@ end
 % Theodorsen Function
 for iter = 1:length(U)
     
-    omega = 1; % starting value
+    omega = (Ka/I_a)^0.5; % starting value
+    omega = (Kh/MASS)^0.5;
     error = 1;
-    
-    for pitch_plunge = 1:2
-        
-       
-        
-    end
     
     while error > 0.01
         
@@ -131,7 +126,7 @@ for iter = 1:length(U)
 
         E_k = [
             -2*pi*AIR_RHO*b*U(iter)*C_k,  -AIR_RHO*pi*(b^2)*U(iter) + (2*pi*AIR_RHO*b*U(iter)*C_k*(a-b/2));
-            AIR_RHO*pi*(b^2)*U(iter) - (AIR_RHO*pi*b*U(iter)*(b-(2*a + b)*C_k)),  -AIR_RHO*pi*(b^2)*U(iter)*(c/4) + AIR_RHO*pi*(b^2)*U(iter)*(b-(2*a + b)*C_k)*(a - b/2)
+            AIR_RHO*pi*(b^2)*U(iter) - (AIR_RHO*pi*b*U(iter)*(b-(2*a + b)*C_k)),  -AIR_RHO*pi*(b^2)*U(iter)*(c/4) + AIR_RHO*pi*b*U(iter)*(b-(2*a + b)*C_k)*(a - b/2)
         ];
 
 
@@ -142,32 +137,27 @@ for iter = 1:length(U)
 
 
         A_k = [
-
             zeros(2),  eye(2);
-
             (inv(M - D_k))*(F_k - K),  (inv(M - D_k))*E_k
-
         ];
 
         [vector, value] = eig(A_k);
         sorted_values = value(imag(value)~=0);
-        
         omega_new = abs(imag(sorted_values(1)));
         error = calculateError(omega, omega_new);
         omega = omega_new;
        
     end
     
-    all_omegas(iter) = omega / (2*pi);
+    all_omegas(iter, 1) = abs(imag(sorted_values(1))) / (2*pi);
+    all_omegas(iter, 2) = abs(imag(sorted_values(3))) / (2*pi);
+    
+    all_damp(iter, 1) = -real(sorted_values(1)) / abs(sorted_values(1));
+    all_damp(iter, 2) = -real(sorted_values(3)) / abs(sorted_values(3));
         
 end
 
-disp(size(all_omegas));
-
-
-
-
-
+disp(all_omegas);
 
 figure
 title('Natural Frequency vs Velocity')
@@ -177,7 +167,8 @@ grid on
 hold on 
 plot(U, US_freq(:, 1), '--')
 plot(U, US_freq(:, 2), '--')
-plot(U, all_omegas)
+plot(U, all_omegas(:, 1))
+plot(U, all_omegas(:, 2))
 plot(US_flutter, US_freq(US_idx, 1), 'b.', 'MarkerSize', 18)
 text(US_flutter-20, US_freq(US_idx,1)-0.15, sprintf('Velocity = %.2f m/s', US_flutter))
 
@@ -189,8 +180,10 @@ xlabel('Velocity, U(m/s)')
 grid on
 hold on
 title('Damping vs Speed')
-plot(U, US_damp(:, 1))
-plot(U, US_damp(:, 2))
+plot(U, US_damp(:, 1), '--')
+plot(U, US_damp(:, 2), '--')
+plot(U, all_damp(:, 1))
+plot(U, all_damp(:, 2))
 plot(US_flutter, US_damp(US_idx, 1), 'b.', 'MarkerSize', 18)
 text(US_flutter, US_damp(US_idx,1)+0.05, sprintf('Velocity = %.2f m/s', US_flutter))
 
