@@ -94,9 +94,7 @@ for j = 1:length(U)
     end
 end
 
-% Kt = Ka
-% k = Kh
-% Ka = Kt * alpha
+
 
 % Theodorsen Function
 for iter = 1:length(U)
@@ -104,11 +102,17 @@ for iter = 1:length(U)
     omega = 1; % starting value
     error = 1;
     
+    for pitch_plunge = 1:2
+        
+       
+        
+    end
+    
     while error > 0.01
         
         k = omega*b/U(iter);
     
-        C_k = 1 - (0.165 / 1 - (0.0455i/k)) - (0.335 / 1 - (0.030i/k));
+        C_k = 1-(0.165/(1-1i*(0.0455/k)))-(0.335/(1-1i*(0.3/k)));
 
         M = [
             MASS, S;
@@ -121,13 +125,13 @@ for iter = 1:length(U)
         ];
 
         D_k = [
-            -AIR_RHO*pi*(b^2),  AIR_RHO*pi*(b^2);
-            AIR_RHO*pi*(b^2)*a,  (a^2 + b^2/8);
+            -AIR_RHO*pi*(b^2),  AIR_RHO*pi*(b^2)*a;
+            AIR_RHO*pi*(b^2)*a,  -(a^2 + b^2/8);
         ];
 
         E_k = [
-            -2*pi*AIR_RHO*b*U(iter)*C_k,  -AIR_RHO*pi*(b^2)*U(iter)*C_k*(a-b/2);
-            AIR_RHO*pi*(b^2)*U(iter) - AIR_RHO*pi*b*U(iter)*(b-(2*a + b)*C_k),  -AIR_RHO*pi*(b^2)*U(iter)*(c/4) + AIR_RHO*pi*(b^2)*U(iter)*(b-(2*a + b)*C_k)*(a - b/2)
+            -2*pi*AIR_RHO*b*U(iter)*C_k,  -AIR_RHO*pi*(b^2)*U(iter) + (2*pi*AIR_RHO*b*U(iter)*C_k*(a-b/2));
+            AIR_RHO*pi*(b^2)*U(iter) - (AIR_RHO*pi*b*U(iter)*(b-(2*a + b)*C_k)),  -AIR_RHO*pi*(b^2)*U(iter)*(c/4) + AIR_RHO*pi*(b^2)*U(iter)*(b-(2*a + b)*C_k)*(a - b/2)
         ];
 
 
@@ -146,11 +150,9 @@ for iter = 1:length(U)
         ];
 
         [vector, value] = eig(A_k);
-
-        sorted_value = value(imag(value)~=0);
-        disp(sorted_value);
-
-        omega_new = abs(imag(sorted_value(2)));
+        sorted_values = value(imag(value)~=0);
+        
+        omega_new = abs(imag(sorted_values(1)));
         error = calculateError(omega, omega_new);
         omega = omega_new;
        
