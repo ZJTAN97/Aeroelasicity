@@ -199,7 +199,7 @@ legend('Wagner Function', 'Wagner Function', 'P-k Method', 'P-k Method')
 
 
 
-% Get Frequency and Damping Ratio for Either Plunge or Pitch (in progress..)
+% Get Frequency and Damping Ratio for Either Plunge or Pitch (in progress.. ignore)
 function [eigenValue] = calculateEigenValue(DOF, velocity)
     error = 1;  
     while error > 0.01
