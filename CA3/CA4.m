@@ -39,7 +39,7 @@ US_idx = 0;
 
 U = linspace(1, VELOCITY_CAP, VELOCITY_CAP);
 
-
+tic
 % Unsteady Aero using Wagners Function
 for j = 1:length(U)
     
@@ -96,12 +96,18 @@ for j = 1:length(U)
         US_stopper = US_stopper + 1;
     end
 end
-
+disp("--Wagner--");
+toc
 
 % P-k Method
 all_omegas = zeros(VELOCITY_CAP, 2);
 all_damp = zeros(VELOCITY_CAP, 2);
 
+all_flutter = 0;
+all_stopper = 0;
+all_idx = 0;
+
+tic
 for iter = 1:length(U)
     
     error = 1;
@@ -121,7 +127,7 @@ for iter = 1:length(U)
                   0, Ka ];
               
             D_k = [ -AIR_RHO*pi*(b^2),  AIR_RHO*pi*(b^2)*a;
-                    AIR_RHO*pi*(b^2)*a,  -(a^2 + b^2/8) ];
+                    AIR_RHO*pi*(b^2)*a,  -AIR_RHO*pi*(b^2)*(a^2 + b^2/8) ];
                 
             E_k = [ 
                 -2*pi*AIR_RHO*b*U(iter)*C_k,  -AIR_RHO*pi*(b^2)*U(iter) + (2*pi*AIR_RHO*b*U(iter)*C_k*(a-b/2));
@@ -141,8 +147,10 @@ for iter = 1:length(U)
             [vectors, values] = eig(A_k);
             sorted_values = values(imag(values)~=0);
             
+%             disp(sorted_values);
+            
             if item == 1
-                omega_new = abs(imag(sorted_values(1)));
+                omega_new = abs(imag(sorted_values(2)));
             end
             if item == 2
                omega_new = abs(imag(sorted_values(2)));
@@ -161,7 +169,16 @@ for iter = 1:length(U)
            all_damp(iter, 2) = -real(sorted_values(2)) / abs(sorted_values(2));
         end      
     end
+    
+    if(all_damp(iter, 1) < 0 && all_stopper == 0)
+        all_flutter = U(iter);
+        all_idx = iter;
+        all_stopper = all_stopper + 1;
+    end
+    
 end
+disp("--Pk Method--");
+toc
 
 
 figure
@@ -172,27 +189,34 @@ grid on
 hold on 
 plot(U, US_freq(:, 1), '--')
 plot(U, US_freq(:, 2), '--')
+plot(US_flutter, US_freq(US_idx, 1), 'b.', 'MarkerSize', 20)
+text(US_flutter, US_freq(US_idx,1)+0.20, sprintf('Flutter Velocity (Wagner) = %.1f m/s', US_flutter))
+
 plot(U, all_omegas(:, 1))
 plot(U, all_omegas(:, 2))
-% plot(US_flutter, US_freq(US_idx, 1), 'b.', 'MarkerSize', 18)
-% text(US_flutter-20, US_freq(US_idx,1)-0.15, sprintf('Velocity = %.2f m/s', US_flutter))
-legend('Wagner Function', 'Wagner Function', 'P-k Method', 'P-k Method')
+plot(all_flutter, all_omegas(all_idx, 1), 'r.', 'MarkerSize', 20)
+text(all_flutter-10, all_omegas(US_idx,1)-0.2, sprintf('Flutter Velocity (P-k) = %.1f m/s', all_flutter))
+
+legend('Wagner Function', 'Wagner Function', 'Wagner Flutter Point', 'P-k Method', 'P-k Method', 'P-k Flutter Point')
 
 
 figure
-title('Damping Ratio vs Speed')
+title('Damping Ratio vs Velocity')
 ylabel('Damping Ratio \xi (Hz)')
 xlabel('Velocity, U(m/s)')
 grid on
 hold on
-title('Damping vs Speed')
 plot(U, US_damp(:, 1), '--')
 plot(U, US_damp(:, 2), '--')
+plot(US_flutter, US_damp(US_idx, 1), 'b.', 'MarkerSize', 18)
+text(US_flutter, US_damp(US_idx,1)+0.05, sprintf('Flutter Velocity (Wagner) = %.1f m/s', US_flutter))
+
 plot(U, all_damp(:, 1))
 plot(U, all_damp(:, 2))
-% plot(US_flutter, US_damp(US_idx, 1), 'b.', 'MarkerSize', 18)
-% text(US_flutter, US_damp(US_idx,1)+0.05, sprintf('Velocity = %.2f m/s', US_flutter))
-legend('Wagner Function', 'Wagner Function', 'P-k Method', 'P-k Method')
+plot(all_flutter, all_damp(all_idx, 1), 'r.', 'MarkerSize', 18)
+text(all_flutter-10, all_damp(all_idx,1), sprintf('Flutter Velocity (P-k) = %.1f m/s', all_flutter))
+
+legend('Wagner Function', 'Wagner Function', 'Wagner Flutter Point', 'P-k Method', 'P-k Method', 'P-k Flutter Point')
 
 
 

@@ -163,8 +163,8 @@ plot(U, US_freq(:, 1))
 plot(U, US_freq(:, 2))
 plot(US_flutter, US_freq(US_idx, 1), 'b.', 'MarkerSize', 18)
 legend('QS', 'QS', 'QS Flutter Point', 'US', 'US', 'US Flutter Point')
-text(QS_flutter-20, QS_freq(idx,2)-0.15, sprintf('Velocity = %.2f m/s', QS_flutter))
-text(US_flutter-20, US_freq(US_idx,1)-0.15, sprintf('Velocity = %.2f m/s', US_flutter))
+text(QS_flutter-5, QS_freq(idx,2)-0.15, sprintf('Velocity = %.2f m/s', QS_flutter))
+text(US_flutter-5, US_freq(US_idx,1)-0.15, sprintf('Velocity = %.2f m/s', US_flutter))
 
 
 figure
