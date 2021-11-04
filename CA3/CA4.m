@@ -100,12 +100,12 @@ disp("--Wagner--");
 toc
 
 % P-k Method
-all_omegas = zeros(VELOCITY_CAP, 2);
-all_damp = zeros(VELOCITY_CAP, 2);
+pk_omegas = zeros(VELOCITY_CAP, 2);
+pk_damp = zeros(VELOCITY_CAP, 2);
 
-all_flutter = 0;
-all_stopper = 0;
-all_idx = 0;
+pk_flutter = 0;
+pk_stopper = 0;
+pk_idx = 0;
 
 tic
 for iter = 1:length(U)
@@ -161,19 +161,19 @@ for iter = 1:length(U)
         end
         
         if item == 1
-            all_omegas(iter, 1) = abs(imag(sorted_values(1))) / (2*pi);
-            all_damp(iter, 1) = -real(sorted_values(1)) / abs(sorted_values(1));
+            pk_omegas(iter, 1) = abs(imag(sorted_values(1))) / (2*pi);
+            pk_damp(iter, 1) = -real(sorted_values(1)) / abs(sorted_values(1));
         end
         if item == 2
-           all_omegas(iter, 2) = abs(imag(sorted_values(2))) / (2*pi);
-           all_damp(iter, 2) = -real(sorted_values(2)) / abs(sorted_values(2));
+           pk_omegas(iter, 2) = abs(imag(sorted_values(2))) / (2*pi);
+           pk_damp(iter, 2) = -real(sorted_values(2)) / abs(sorted_values(2));
         end      
     end
     
-    if(all_damp(iter, 1) < 0 && all_stopper == 0)
-        all_flutter = U(iter);
-        all_idx = iter;
-        all_stopper = all_stopper + 1;
+    if(pk_damp(iter, 1) < 0 && pk_stopper == 0)
+        pk_flutter = U(iter);
+        pk_idx = iter;
+        pk_stopper = pk_stopper + 1;
     end
     
 end
@@ -192,10 +192,10 @@ plot(U, US_freq(:, 2), '--')
 plot(US_flutter, US_freq(US_idx, 1), 'b.', 'MarkerSize', 20)
 text(US_flutter, US_freq(US_idx,1)+0.20, sprintf('Flutter Velocity (Wagner) = %.1f m/s', US_flutter))
 
-plot(U, all_omegas(:, 1))
-plot(U, all_omegas(:, 2))
-plot(all_flutter, all_omegas(all_idx, 1), 'r.', 'MarkerSize', 20)
-text(all_flutter-10, all_omegas(US_idx,1)-0.2, sprintf('Flutter Velocity (P-k) = %.1f m/s', all_flutter))
+plot(U, pk_omegas(:, 1))
+plot(U, pk_omegas(:, 2))
+plot(pk_flutter, pk_omegas(pk_idx, 1), 'r.', 'MarkerSize', 20)
+text(pk_flutter-10, pk_omegas(US_idx,1)-0.2, sprintf('Flutter Velocity (P-k) = %.1f m/s', pk_flutter))
 
 legend('Wagner Function', 'Wagner Function', 'Wagner Flutter Point', 'P-k Method', 'P-k Method', 'P-k Flutter Point')
 
@@ -211,81 +211,13 @@ plot(U, US_damp(:, 2), '--')
 plot(US_flutter, US_damp(US_idx, 1), 'b.', 'MarkerSize', 18)
 text(US_flutter, US_damp(US_idx,1)+0.05, sprintf('Flutter Velocity (Wagner) = %.1f m/s', US_flutter))
 
-plot(U, all_damp(:, 1))
-plot(U, all_damp(:, 2))
-plot(all_flutter, all_damp(all_idx, 1), 'r.', 'MarkerSize', 18)
-text(all_flutter-10, all_damp(all_idx,1), sprintf('Flutter Velocity (P-k) = %.1f m/s', all_flutter))
+plot(U, pk_damp(:, 1))
+plot(U, pk_damp(:, 2))
+plot(pk_flutter, pk_damp(pk_idx, 1), 'r.', 'MarkerSize', 18)
+text(pk_flutter-10, pk_damp(pk_idx,1), sprintf('Flutter Velocity (P-k) = %.1f m/s', pk_flutter))
 
 legend('Wagner Function', 'Wagner Function', 'Wagner Flutter Point', 'P-k Method', 'P-k Method', 'P-k Flutter Point')
 
-
-
-
-
-
-% Get Frequency and Damping Ratio for Either Plunge or Pitch (in progress.. ignore)
-function [eigenValue] = calculateEigenValue(DOF, velocity)
-    error = 1;  
-    while error > 0.01
-        if DOF == "pitch"
-            omega = (Ka/I_a)^0.5;
-        end
-        if DOF == "plunge"
-           omega = (Kh/MASS)^0.5;
-        end   
-
-        k = omega*b/velocity;
-        C_k = 1 - (0.165/(1-(0.0455i/k))) - (0.335/(1-(0.3i/k)));
-        M = [
-            MASS, S;
-            S, I_a;
-        ];
-        K = [
-            Kh, 0;
-            0, Ka;
-        ];
-        D_k = [
-            -AIR_RHO*pi*(b^2),  AIR_RHO*pi*(b^2)*a;
-            AIR_RHO*pi*(b^2)*a,  -(a^2 + b^2/8);
-        ];
-        E_k = [
-            -2*pi*AIR_RHO*b*U(iter)*C_k,  -AIR_RHO*pi*(b^2)*U(iter) + (2*pi*AIR_RHO*b*U(iter)*C_k*(a-b/2));
-            AIR_RHO*pi*(b^2)*U(iter) - (AIR_RHO*pi*b*U(iter)*(b-(2*a + b)*C_k)),  -AIR_RHO*pi*(b^2)*U(iter)*(c/4) + AIR_RHO*pi*b*U(iter)*(b-(2*a + b)*C_k)*(a - b/2)
-        ];
-        F_k = [
-            0,  -2*pi*AIR_RHO*b*(U(iter)^2)*C_k;
-            0,  AIR_RHO*pi*(b^2)*(U(iter)^2) - AIR_RHO*pi*b*(U(iter)^2)*(b-(2*a+b)*C_k)
-        ];
-        A_k = [
-            zeros(2),  eye(2);
-            (inv(M - D_k))*(F_k - K),  (inv(M - D_k))*E_k
-        ];
-
-        [~, values] = eig(A_k);
-        sorted_values = values(imag(values)~=0);
-
-        if DOF == "pitch"
-            omega_new = abs(imag(sorted_values(1)));
-        end
-
-        if DOF == "plunge"
-           omega_new = abs(imag(sorted_values(2)));
-        end         
-
-        error = calculateError(omega, omega_new);
-        omega = omega_new;
-
-    end
-    
-    if DOF == "pitch"
-        eigenValue = abs(imag(sorted_values(1))) / (2*pi);
-    end
-
-    if DOF == "plunge"
-       eigenValue = abs(imag(sorted_values(2))) / (2*pi);
-    end         
-    
-end
 
 
 %--Helper Functions--%
